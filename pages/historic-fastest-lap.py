@@ -217,23 +217,30 @@ def update_graph(session_info):
     session.load(telemetry=True, laps=True, weather=False)
     
     fig = go.Figure()
+    existing_driver_colors = set()
 
     for driver in session_info['drivers']:
         # Get driver obj
         driver_obj = session.get_driver(driver)
-        print(driver_obj)
 
+        # Ensure unique line style for each driver
+        if driver_obj['TeamColor'] in existing_driver_colors:
+            line_style = 'dash'
+        else:
+            existing_driver_colors.add(driver_obj['TeamColor'])
+            line_style = 'solid'
+        
         # Get telemetry
         telemetry = get_telemetry_for_lap(get_fastest_lap(driver, session))
         if telemetry is None:
             return dash.no_update
-    
+        
         # Draw graph    
         fig.add_trace(go.Scatter(
             x=telemetry['Distance'],
             y=telemetry['Speed'],
             name=f'Speed over Distance - {driver}',
-            line={'color': f'#{driver_obj["TeamColor"]}'}
+            line={'color': f'#{driver_obj["TeamColor"]}', 'dash': line_style}
         ))
 
     fig.update_layout(

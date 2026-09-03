@@ -34,7 +34,7 @@ type ApiResponse = Record<string, DriverData>;
 // ---------------------------------------------------------------------------
 
 export const HistoricDataPage: React.FC = () => {
-  
+
   const [year, setYear] = useState<number>(2026);
   const [event, setEvent] = useState<string>('Silverstone');
   const [session, setSession] = useState<string>('Q');
@@ -55,16 +55,19 @@ export const HistoricDataPage: React.FC = () => {
     const driversArray = driversInput.split(',').map((d) => d.trim().toUpperCase());
 
     try {
-      const response = await axios.get<ApiResponse>('http://localhost:8000/api/fastest-lap-data', {
+      const response = await axios.get<{ status: string; data: ApiResponse }>('http://localhost:8000/api/fastest-lap-data', {
         params: {
           year,
           event,
           session,
           drivers: driversArray,
         },
+        paramsSerializer: {
+          indexes: null,
+        },
       });
 
-      setTelemetryData(response.data);
+      setTelemetryData(response.data.data);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to fetch telemetry data.');
     } finally {
@@ -76,7 +79,8 @@ export const HistoricDataPage: React.FC = () => {
   // PLOTLY TRACE
   // ---------------------------------------------------------------------------
   const plotlyTraces: any[] = [];
-  const lapTimeTableRows: TimingData[] = [];
+  const lapTimeTableRows: TimingData[] = []
+
 
   if (telemetryData) {
     Object.keys(telemetryData).forEach((driver) => {
@@ -85,12 +89,15 @@ export const HistoricDataPage: React.FC = () => {
       const lineColor = driverData.line_config.color;
       const lineDash = driverData.line_config.dash === 'dash' ? 'dash' : 'solid';
 
-      lapTimeTableRows.push(driverData.timing_data);
+      lapTimeTableRows.push({
+        Driver: driver,
+        ...driverData.timing_data,
+      });
 
       const distances = telemetry.map((pt) => pt.Distance);
       const speeds = telemetry.map((pt) => pt.Speed);
       const throttles = telemetry.map((pt) => pt.Throttle);
-      const brakes = telemetry.map((pt) => pt.Brake);
+      const brakes = telemetry.map((pt) => (pt.Brake ? 1 : 0));
 
       plotlyTraces.push({
         x: distances,
@@ -212,11 +219,11 @@ export const HistoricDataPage: React.FC = () => {
             plot_bgcolor: '#111111',
             paper_bgcolor: '#111111',
             font: { color: '#00CED5' },
-            grid: { rows: 3, columns: 1, pattern: 'independent' },
-            yaxis: { title: { text: 'Speed (km/h)' }, gridcolor: '#333' },
-            yaxis2: { title: { text: 'Throttle (%)' }, gridcolor: '#333', range: [-5, 105] },
-            yaxis3: { title: { text: 'Brake (on/off)' }, gridcolor: '#333', range: [0, 1] },
-            xaxis: { title: { text: 'Distance (m)' }, gridcolor: '#333' },
+            hovermode: 'x unified',
+            yaxis: { title: { text: 'Speed (km/h)' }, gridcolor: '#333', domain: [0.68, 1.0] },
+            yaxis2: { title: { text: 'Throttle (%)' }, gridcolor: '#333', range: [-5, 105], domain: [0.34, 0.64] },
+            yaxis3: { title: { text: 'Brake (on/off)' }, gridcolor: '#333', range: [-0.1, 1.1], domain: [0.0, 0.30], tickvals: [0, 1], ticktext: ['Off', 'On'] },
+            xaxis: { title: { text: 'Distance (m)' }, gridcolor: '#333', anchor: 'y3' },
             autosize: true,
           }}
         />

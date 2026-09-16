@@ -7,7 +7,7 @@ export const HomePage: React.FC = () => {
       <h1>F1 Telemetry Dashboard</h1>
       <p style={{ color: '#aaa' }}>Welcome! Select a module below to analyze F1 data.</p>
 
-      <div style={{ display: 'flex', gap: '20px', marginTop: '30px' }}>
+      <div style={{ display: 'flex', gap: '20px', marginTop: '30px', flexWrap: 'wrap' }}>
         {/* Navigation Card for Historic Data */}
         <div style={{ border: '1px solid #333', padding: '20px', borderRadius: '8px', width: '280px', backgroundColor: '#1a1a1a' }}>
           <h3>Historic Telemetry</h3>
@@ -31,13 +31,27 @@ export const HomePage: React.FC = () => {
           </Link>
         </div>
 
-        {/* Placeholder Navigation Card for Live Data */}
-        <div style={{ border: '1px solid #333', padding: '20px', borderRadius: '8px', width: '280px', backgroundColor: '#1a1a1a', opacity: 0.6 }}>
+        {/* Navigation Card for Live / Replay Data */}
+        <div style={{ border: '1px solid #333', padding: '20px', borderRadius: '8px', width: '280px', backgroundColor: '#1a1a1a' }}>
           <h3>Live Session (WS)</h3>
           <p style={{ color: '#888', fontSize: '14px' }}>
-            Connect to live WebSocket stream during active race weekends.
+            Connect to real-time WebSocket stream or replay 2024 Grand Prix race sessions.
           </p>
-          <span style={{ color: '#666', fontSize: '12px' }}>Coming soon</span>
+          <Link 
+            to="/live" 
+            style={{ 
+              display: 'inline-block', 
+              marginTop: '10px', 
+              padding: '10px 16px', 
+              backgroundColor: '#00CED5', 
+              color: '#111', 
+              fontWeight: 'bold', 
+              textDecoration: 'none', 
+              borderRadius: '4px' 
+            }}
+          >
+            Launch Live Dashboard →
+          </Link>
         </div>
       </div>
     </div>
